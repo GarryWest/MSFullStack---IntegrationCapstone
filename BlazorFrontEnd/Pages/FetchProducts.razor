@@ -25,7 +25,7 @@
         try
         {
             //using var httpClient = new HttpClient();
-            var response = await HttpClient.GetAsync("/api/products");
+            var response = await HttpClient.GetAsync("/api/productlist");
 
             if (response.IsSuccessStatusCode)
             {
