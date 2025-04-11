@@ -1,12 +1,21 @@
-@page "/fetchproducts"
-@using System.Text.Json.Serialization
-@inject HttpClient HttpClient
+@* BlazorFrontEnd/Pages/FetchProducts.razor *@
+@* // This file is part of the BlazorFrontEnd project.
+// It implements a Razor component for fetching and displaying product data from a backend API.
+// Contributions from Copilot include:
+// - Guidance on integrating HttpClient to call an API endpoint.
+// - Recommendations for deserializing JSON data into typed objects.
+// - Enhancements to display nested data like product categories in the UI. *@
 
+@page "/fetchproducts" // Defines the route at which this page can be accessed.
+@using System.Text.Json.Serialization // Allows usage of JSON serialization attributes for mapping JSON properties.
+@inject ApiService ApiService // Injects the ApiService instance configured in Program.cs for making HTTP requests.
+ 
 <h3>Product List</h3>
 
 <ul>
-   @if (products != null)
+    @if (products != null) // Checks if the products data has been loaded.
     {
+        // Loops through the array of products and displays each product's name, price, and category.
         foreach (var product in products)
         {
             <li>
@@ -18,59 +27,58 @@
     }
     else
     {
+        // Displays a loading message if the data is still being fetched.
         <li>Loading...</li>
     }
 </ul>
 
 @code {
-    private Product[]? products;
+    private Product[]? products; // Holds the array of products fetched from the backend.
 
+    // Lifecycle method that runs when the component initializes.
     protected override async Task OnInitializedAsync()
     {
-        try
+        if (products == null) // Avoid making a call if data is already loaded
         {
-            var response = await HttpClient.GetAsync("/api/productlist");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                products = System.Text.Json.JsonSerializer.Deserialize<Product[]>(jsonResponse);
+                // Sends an HTTP GET request to the API endpoint /api/productlist.
+                products = await ApiService.GetAsync<Product[]>("/api/productlist");
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"API call failed: {response.StatusCode}");
+                // Logs any exceptions that occur during the HTTP request or deserialization.
+                Console.WriteLine($"An error occurred: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 
+    // Represents the product data model. Includes properties that match the API's JSON response structure.
     public class Product
     {
-        [JsonPropertyName("id")]
+        [JsonPropertyName("id")] // Maps the "id" JSON key to this property.
         public int Id { get; set; }
 
-        [JsonPropertyName("name")]
+        [JsonPropertyName("name")] // Maps the "name" JSON key to this property.
         public string Name { get; set; }
 
-        [JsonPropertyName("price")]
+        [JsonPropertyName("price")] // Maps the "price" JSON key to this property.
         public double Price { get; set; }
 
-        [JsonPropertyName("stock")]
+        [JsonPropertyName("stock")] // Maps the "stock" JSON key to this property.
         public int Stock { get; set; }
 
-        [JsonPropertyName("category")]
+        [JsonPropertyName("category")] // Maps the "category" JSON key to this property.
         public Category Category { get; set; }
     }
 
+    // Represents the category data model. This is nested within the Product class.
     public class Category
     {
-        [JsonPropertyName("id")]
+        [JsonPropertyName("id")] // Maps the "id" JSON key to this property.
         public int Id { get; set; }
 
-        [JsonPropertyName("name")]
+        [JsonPropertyName("name")] // Maps the "name" JSON key to this property.
         public string Name { get; set; }
     }
 }
